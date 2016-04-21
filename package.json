@@ -1,0 +1,11 @@
+{
+    "name": "route-depot",
+    "version": "0.0.1",
+    "description": "",
+    "author": "Andres Hermosilla <an2dres5m@gmail.com>",
+    "dependencies": {
+        "async": "~2.0.0",
+        "underscore.string": "3.3.4"
+    },
+    "devDependencies": {},
+}
