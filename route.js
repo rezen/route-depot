@@ -28,6 +28,8 @@ class Route {
    * @param  {Object} config
    */
   constructor(request, method, handler, context, config) {
+    const name = handler ? (handler.$name || handler.name) : null;
+    const order = handler ? (handler.$order || handler.order) : null;
     config        = config || {};
     this._method  = null;
     this._path    = null;
@@ -37,9 +39,9 @@ class Route {
     this.handlers = [];
     this.wrappers = [];
     this.priority = config.priority || Priorities.DEFAULT;
-    this.name     = config.name || (handler.$name || handler.name);
+    this.name     = config.name || name;
     this.root     = config.root || false;
-    this.order    = config.order || handler.$order || null;
+    this.order    = config.order || order;
     this.addWrappers(this.constructor.wrappers || []);
     this.addHandler(handler, context || config.binding);
   }
@@ -117,13 +119,13 @@ class Route {
     }
 
     // Handles request
-    return function onRequest(req, res, next) {
+    function onRequest(req, res, next) {
       /**
        *  Pass the handler with the request injected 
        *  so that route handlers can call the handle
        */
       fn.$call = function() {
-        fn(req, res, next);
+        return fn(req, res, next);
       };
 
       // The wraps may want to know the origin name
@@ -145,7 +147,11 @@ class Route {
       }, function onWrapped(err) {
         fn.$call();
       });
-    };
+    }
+
+    onRequest.$handle = fn.$handle;
+
+    return onRequest;
   }
 
   /**
@@ -165,6 +171,9 @@ class Route {
       }
         
       fn = handle.bind(this.context);
+      fn.$bound = true;
+    } else {
+      fn.$bound = false;
     }
 
     fn.$handle = name;
