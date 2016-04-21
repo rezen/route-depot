@@ -1,11 +1,27 @@
 {
     "name": "route-depot",
     "version": "0.0.1",
-    "description": "",
+    "description": "Making it easy to register routes for your http server!",
     "author": "Andres Hermosilla <an2dres5m@gmail.com>",
     "dependencies": {
         "async": "~2.0.0",
         "underscore.string": "3.3.4"
     },
+    "repository": {
+        "type": "git",
+        "url": "git://github.com/rezen/route-depot"
+    },
     "devDependencies": {},
+    "keywords": [
+        "framework",
+        "http",
+        "router",
+        "controller",
+        "web",
+        "depot"
+    ],
+    "engines": {
+        "node": ">=4.0.0"
+    },
+    "license": "MIT"
 }

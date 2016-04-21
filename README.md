@@ -88,9 +88,5 @@ app.listen(3000, function () {
 
 ````
 
-## License
-
-  [MIT](LICENSE)
-
 [npm-image]: https://img.shields.io/npm/v/route-depot.svg
 [npm-url]: https://npmjs.org/package/route-depot
