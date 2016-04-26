@@ -1,19 +1,21 @@
 'use strict';
 
+const _s         = require('underscore.string');
 const mapper     = require('./route-mapper');
 const Priorities = require('./priorities');
 const RouteList  = require('./route-list');
 const Route      = require('./route');
 const RouteGroup = require('./route-group');
 
+// @todo event emitter
 class RouteDepot {
   /**
    * A number of http routers adding routes immediately attach
    * to the router which means you can't add routes out of order.
-   * The route depot allows you to specify the priortity, as well 
-   * as have an info bank of all the routes that can be used 
+   * The route depot allows you to specify the priortity, as well
+   * as have an info bank of all the routes that can be used
    * by other services
-   * 
+   *
    * @param  {Object} coupler - coupler connects the defined routes to the http server
    * @param  {Object} mapper  - determines routes of an object
    * @param  {Object} logger
@@ -24,36 +26,45 @@ class RouteDepot {
     this.Route      = Route;
     this.RouteGroup = RouteGroup;
     this.RouteList  = RouteList;
-    this.list       = this.setupList();
-  
+    this.routes     = this.setupRoutes();
+
     this.checkCoupling(coupler);
     this.mapper  = mapper;
     this.logger  = logger || console;
   }
 
-  setupList(list) {
-    list = list || new this.RouteList();
+  setupRoutes(list) {
     /**
      * Using the list integration attachs the functions below
      * for the depot to use for adding routes.
-     * 
+     *
      * .addRoute(route)
      * .route(endpoint, method, handler, config)
      */
-    list.integrate(this); 
+    list = list || new this.RouteList();
+    list.integrate(this);
     return list;
   }
 
   /**
    * Check the coupler to ensure all the definitions exist
-   * 
+   *
    * @param  {Object} coupler
    */
-  checkCoupling(coupler) {
+  checkCoupling(coupler, isTest) {
     for (const method of ['route', 'depot', 'group']) {
       if (typeof coupler[method] !== 'function') {
         throw new Error('The coupler is missing @' + method)
       }
+    }
+
+    /**
+     * If you just want to check if the coupler
+     * has the expected functions make sure isTest
+     * is set
+     */
+    if (isTest) {
+      return;
     }
 
     this.coupler = coupler;
@@ -73,7 +84,7 @@ class RouteDepot {
     this.route(endpoint, 'GET', handler, null, config);
     return this;
   }
-  
+
   /**
    * For handling a POST
    *
@@ -125,7 +136,7 @@ class RouteDepot {
   /**
    * Maps HTTP methods to actions on controller
    * for index, create, store, show, edit
-   * 
+   *
    * @param  {String} endpoint
    * @param  {Object} Ctrl
    * @param  {Object} config
@@ -141,7 +152,7 @@ class RouteDepot {
   /**
    * Automatically generate routes for a controller
    * based on the names of the functions
-   * 
+   *
    * @param  {String} endpoint
    * @param  {Object} Ctrl
    * @param  {Object} config
@@ -156,10 +167,10 @@ class RouteDepot {
 
   /**
    * Add a controller which with a routes config
-   * so that the controller routes will be bound 
-   * to the controller and not lose context when 
+   * so that the controller routes will be bound
+   * to the controller and not lose context when
    * registering the route
-   * 
+   *
    * @param  {String} endpoint
    * @param  {Object} Ctrl
    * @param  {Object} config
@@ -167,6 +178,10 @@ class RouteDepot {
    */
   controller(endpoint, Ctrl, config) {
     config = config || (Ctrl.config || {});
+
+    if (typeof config === 'number') {
+      config = {priority: config};
+    }
 
     if (Ctrl.routes && !config.routes) {
       config.routes = Ctrl.routes;
@@ -182,17 +197,17 @@ class RouteDepot {
 
     config.controller = true;
 
-    const group  = new this.RouteGroup(
-      endpoint, Ctrl, config, 
+    const group = new this.RouteGroup(
+      endpoint, Ctrl, config,
       new this.RouteList(this.plugins.route)
     );
-   
+
     group.configure(config);
     return this.addRoute(group);
   }
 
-  getAll() {
-    return this.list.getAll();
+  all() {
+    return this.routes.all();
   }
 
   /**
@@ -202,22 +217,22 @@ class RouteDepot {
    * @param  {Route|RouteGroup} route
    * @return {Mixed}
    */
-  preAttach(route) {
+  assemble(route) {
     if (!this.plugins.attach) {
       return route;
     }
 
-    return this.plugins.attach.reduce((acc, fn) => {
-      return fn(acc);
+    return this.plugins.attach.reduce((route_, fn) => {
+      return fn(route_, this);
     }, route);
   }
 
   /**
    * Add plugins to the depot for filtering
-   * routes add/or tweaking attaching to the 
+   * routes add/or tweaking attaching to the
    * http server
-   * 
-   * @param  {String}   tag 
+   *
+   * @param  {String}   tag
    * @param  {Function} plugin
    */
   plugin(tag, plugin) {
@@ -225,13 +240,19 @@ class RouteDepot {
       this.plugins[tag] = [];
     }
 
-    if (tag === 'route') {
-      this.list.addFilter(plugin);
+    const handle = ''.concat('onPlugin', _s.classify(tag));
+
+    if (typeof this[handle] === 'function') {
+      this[handle](plugin);
     }
 
     // @todo ensure plugin is not added twice
     this.plugins[tag].push(plugin);
     return this;
+  }
+
+  onPluginRoute(plugin) {
+    this.routes.addFilter(plugin);
   }
 
   couple() {

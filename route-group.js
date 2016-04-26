@@ -7,10 +7,10 @@ const RouteList  = require('./route-list');
 class RouteGroup {
   /**
    * RouteGroup was designed to pass it's context to nested groups.
-   * The specific use case was controllers can be passed in and 
+   * The specific use case was controllers can be passed in and
    * their routes configured bound to the "parent" object
    *
-   * The class can also be used an organizational grouping, just 
+   * The class can also be used an organizational grouping, just
    * make sure the context is a falsey value
    *
    * @param  {String}    endpoint
@@ -20,10 +20,10 @@ class RouteGroup {
    */
   constructor(endpoint, context, config, list) {
     config            = config || {};
-    this.middleware   = [];
+    this.middleware   = []; // @todo use warehouse
     this.Route        = Route;
     this.RouteList    = RouteList;
-    this.list         = this.setupList(list);
+    this.routes       = this.setupRoutes(list);
     this.endpoint     = endpoint;
     this.context      = context;
     this.config       = config
@@ -34,25 +34,23 @@ class RouteGroup {
   /**
    * Using the list integration attachs the functions below
    * for the group to use for adding routes.
-   * 
+   *
    * .addRoute(route)
    * .route(endpoint, method, handler, config)
    *
    * @param {Mixed} wraps
    * @return {RouteList}
    */
-  setupList(list) {
+  setupRoutes(list) {
     list = list || new this.RouteList();
-    
-    list.integrate(this); 
+    list.integrate(this);
     return list;
   }
-
 
   /**
    * The route mapping should be passed via the config.routes
    * options
-   * 
+   *
    * @param  {Object} config
    */
   configure(config) {
@@ -65,9 +63,9 @@ class RouteGroup {
   }
 
   /**
-   * Add a route to the group. Generally used by the 
+   * Add a route to the group. Generally used by the
    * configure functions
-   * 
+   *
    * @param {String}   endpoint
    * @param {String}   method
    * @param {Function} handler
@@ -76,57 +74,66 @@ class RouteGroup {
   add(endpoint, method, handler, config) {
     return this.route(endpoint, method, handler, this.context, {
       root: this.endpoint,
-      fromController: this.isController,
+      fromController: this.isController
     });
   }
 
   /**
    * Get all the routes for the group
-   * 
+   *
    * @return {Array}
    */
-  getAll() {
-    return this.list.getAll();
+  all() {
+    return this.routes.all();
   }
 
   /**
    * RouteGroup wrappers trickle down into the groups
    * nested routes
-   * 
+   *
    * @param {Array|Function} wraps
    */
   setWrappers(wraps) {
     if (!wraps) {return;}
+
     if (!Array.isArray(wraps)) {
       wraps = [wraps]
     }
 
-    this.list.routes.map(route => {
-      route.addWrappers(wraps);
+    this.routes.entries.map(route => {
+      route.addWrapper(wraps);
     });
-  }
-
-  /**
-   * Setting the context on the group, resets the context 
-   * for the nested routes
-   * 
-   * @param  {Object} val
-   */
-  set context(val) {
-    if (!val) {return;}
-    this._context = val;
-
-    this.list.routes.map(route => {
-      route.context = val;
-    });
-  }
-  
-  get context() {
-    return this._context;
   }
 
   couple() {
     throw new Error('RouteGroup@couple missing definition');
+  }
+
+  url() {
+    return {
+      endpoint: this.endpoint,
+      routes:   this.routes.entries.map(r => r.url())
+    };
+  }
+
+  /**
+   * Setting the context on the group, resets the context
+   * for the nested routes
+   *
+   * @param  {Object} val
+   */
+  set context(val) {
+    if (!val) {return;}
+
+    this._context = val;
+
+    this.routes.entries.map(route => {
+      route.context = val;
+    });
+  }
+
+  get context() {
+    return this._context;
   }
 }
 

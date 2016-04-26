@@ -3,7 +3,7 @@
 const _s = require('underscore.string');
 
 /**
- * Set up $routes maps for a controller without having 
+ * Set up $routes maps for a controller without having
  * to explicity set endpoints
  */
 function keyRoute(parts, joiner) {
@@ -28,7 +28,7 @@ function resource(obj, resourceName) {
 
   var inspect = obj;
 
-  if (typeof obj === 'function'){
+  if (typeof obj === 'function') {
     inspect = obj.prototype;
   }
 
@@ -38,12 +38,12 @@ function resource(obj, resourceName) {
     const idPattern = ':' + _s.camelize(name, true) + 'Id';
     const actions = {
       index:   ['get'],
-      create:  ['get','create'],
+      create:  ['get', 'create'],
       store:   ['post'],
-      show:    ['get', idPattern], 
-      edit:    ['get', idPattern, 'edit'] , 
-      update:  ['put', idPattern], 
-      destroy: ['delete', idPattern],
+      show:    ['get', idPattern],
+      edit:    ['get', idPattern, 'edit'],
+      update:  ['put', idPattern],
+      destroy: ['delete', idPattern]
     };
 
     for (const attr of props) {
@@ -72,7 +72,7 @@ module.exports.resource = resource;
 function implicit(obj) {
   var inspect = obj;
 
-  if (typeof obj === 'function'){
+  if (typeof obj === 'function') {
     inspect = obj.prototype;
   }
 

@@ -5,7 +5,7 @@ const express = require('express');
 /**
  * These functions are used to attach to the appropriate
  * http interface
- * 
+ *
  * @type {Object}
  */
 module.exports = {
@@ -18,14 +18,14 @@ module.exports = {
 
   /**
    * This function is bound to RouteDepot@couple
-   * 
+   *
    * @param  {Object} app - express instance, aka express()
    * @return {Object}
    */
   depot: function(app) {
-    return this.getAll().reduce((http, route) => {
+    return this.all().reduce((http, route) => {
       const router = express.Router();
-      route = this.preAttach(route);
+      route = this.assemble(route);
       route.couple(router);
       http.use(route.endpoint, router);
       return http;
@@ -39,10 +39,12 @@ module.exports = {
    * @return {Object}
    */
   route: function(router) {
-    const args = this.getHandlers();
+    const args = this.tracks();
     args.unshift(this.path);
+
     // @todo for debug
     if (!router.$id) {router.$id =  Math.random();}
+
     router[this.method].apply(router, args);
     return router;
   },
@@ -58,7 +60,7 @@ module.exports = {
       router.use(fn);
     });
 
-    return this.getAll().reduce((router_, route) => {
+    return this.all().reduce((router_, route) => {
       return route.couple(router_);
     }, router);
   }

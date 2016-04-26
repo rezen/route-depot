@@ -1,22 +1,27 @@
 'use strict';
 
+const tools      = require('./tools');
 const Priorities = require('./priorities');
 const Route      = require('./route');
+const fnStack    = require('./mixins/fn-stack');
 
+/**
+ * @todo pre/post filters
+ */
 class RouteList {
 
   constructor(filters, logger) {
     this.filters  = filters || [];
     this.logger   = logger || console;
     this.Route    = Route;
-    this.routes   = [];
+    this.entries  = [];
     this._skipped = 0;
     this.Priority = Priorities;
   }
 
   /**
    * Add a route to the list
-   * 
+   *
    * @param  {String} endpoint
    * @param  {Mixed}  method  - GET, POST, PUT, PATCH, DELETE
    * @param  {Mixed}  handler - should be a function ...
@@ -29,60 +34,35 @@ class RouteList {
       method  = null;
     }
 
-    config = config || (handler.$config || {});
-
-    if (!config.priority) {
-      config.priority = handler.$priority || this.Priority.DEFAULT;
-    }
-
     const route = new this.Route(endpoint, method, handler, context, config);
     this.addRoute(route);
     return this;
   }
 
   /**
-   * Throws route through plugin and add to the 
+   * Throws route through plugin and add to the
    * routes stack if the plugins don't disable
-   * 
+   *
    * @param {Route|RouteGroup} route
    */
   addRoute(route) {
-    route = this.preAdd(route);
+    route = this.prefilter(route);
 
     if (!route) {
-      this._skipped ++;
+      this._skipped++;
       return route;
     }
 
-    const order = this.routes.push(route) - 1;
+    const order = this.entries.push(route) - 1;
     route.order = route.order || order;
     return route;
-  }
-
-
-  /**
-   * Pass in a filter that can manipulate route properties
-   * or make route ignoreable by returning falsy value
-   *
-   * @param {Function} fn
-   */
-  addFilter(fn) {
-    if (this.filters.indexOf(fn) !== -1) {
-      return false;
-    }
-
-    if (typeof fn !== 'function') {
-      return false;
-    }
-
-    this.filters.push(fn);
   }
 
   /**
    * Allows objects to use route list api. Will
    * only attach functions to object if the function
    * names don't already exist
-   * 
+   *
    * @param  {Object} object
    */
   integrate(object) {
@@ -96,34 +76,37 @@ class RouteList {
   }
 
   /**
+   *  Routes are passed through this filter
+   *  before adding to the depot
+   *
+   * @param  {Route|RouteGroup} route
+   * @return {Mixed}
+   */
+  prefilter(route) {
+    const layers = this.collectFilters(this.filters);
+
+    if (!layers.length === 0) {
+      return route;
+    }
+
+    return layers.reduce((acc, fn) => {
+      return fn(acc);
+    }, route);
+  }
+
+  // @todo
+  // postfilter(route) {}
+
+  /**
    * Get all routes sorted by priority
    *
    * @return {Array}
    */
-  getAll() {
-    return this.routes.slice(0).sort(function(a, b) {
-      const x = a.priority || Priorities.DEFAULT; 
-      const y = b.priority || Priorities.DEFAULT;
-      return ((x < y) ? -1 : ((x > y) ? 1 : 0));
-    });
-  }
-
-  /**
-   *  Routes are passed through this filter 
-   *  before adding to the depot
-   * 
-   * @param  {Route|RouteGroup} route
-   * @return {Mixed}
-   */
-  preAdd(route) {
-    if (!this.filters.length === 0) {
-      return route;
-    }
-
-    return this.filters.reduce((acc, fn) => {
-      return fn(acc);
-    }, route);
+  all() {
+    return tools.prioritized(this.entries);
   }
 }
+
+fnStack(RouteList, 'filter');
 
 module.exports = RouteList;
