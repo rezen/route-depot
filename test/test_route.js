@@ -49,12 +49,12 @@ describe('Route', function() {
         });
     });
 
-    describe('#parseRequest', function() {
+    describe('#intakeRequest', function() {
         var data;
         var parser;
         before(function() {
             data = {};
-            parser = route.parseRequest.bind(data);
+            parser = route.intakeRequest.bind(data);
         });
 
         it('Parse a request', function() {
@@ -67,7 +67,7 @@ describe('Route', function() {
 
         it('Cannot parse invalid http methods', function() {
             const route_ = new Route('/disco')
-            route_.parseRequest('Z /lo');
+            route_.intakeRequest('Z /lo');
             assert.equal(route_.method, null);
         });
 
@@ -77,11 +77,11 @@ describe('Route', function() {
         });
     });
 
-    describe('#buildHandle', function() {
+    describe('#assemble', function() {
 
        it('Build the route handle', function() {
             function xhandle(req, res, next) {}
-            const h = route.buildHandle(xhandle);
+            const h = route.assemble(xhandle);
             assert.equal(h.$bound, false);
             assert.equal(h.$handle, 'xhandle');
        });
@@ -91,7 +91,7 @@ describe('Route', function() {
                 return this.im;
             }
             route.context = {im: 'this'};
-            const h = route.buildHandle(yhandle);
+            const h = route.assemble(yhandle);
             assert.equal(h.$bound, true);
             assert.equal(h.$handle, 'yhandle');
             assert.equal(h(), 'this');
@@ -136,7 +136,7 @@ describe('Route', function() {
             route.context = {hey: 'oh'};
             route.wrappers = [spies.w1, spies.w2];
 
-            const h = route.buildHandle(zhandle);
+            const h = route.assemble(zhandle);
             assert.equal(h.$handle, label);
             const res = h('a', 'b', 'c');
 
@@ -145,7 +145,7 @@ describe('Route', function() {
                 assert(spies.w1.called);
                 assert(spies.w2.called);
                 done();
-            }, 0);
+            }, 10);
        });
     });
 });
