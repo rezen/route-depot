@@ -3,18 +3,16 @@
 const express    = require('express');
 const b          = require('./b');
 const HttpDevice = require('./http-device');
-const Depot    = require('../index');
+const Depot      = require('../index');
 
 const depot = Depot.express();
-
-depot.plugin('route', function(route) {
-  return route;
-});
 
 depot.plugin('attach', function(route) {
   if (!route.isController) {
     return route;
   }
+
+  console.log('Woah!');
 
   if (typeof route.context === 'function') {
     route.context = new route.context('Zinger');
@@ -23,6 +21,7 @@ depot.plugin('attach', function(route) {
   const ctrl = route.context;
 
   if (ctrl.wrap) {
+    console.log('wrap!4');
     route.setWrappers( ctrl.wrap.bind(ctrl))
   }
 
@@ -62,7 +61,7 @@ depot.route('GET /b2', function(req, res) {
 
 depot.controller('/devices/', HttpDevice);
 
-const http  = express();
+const http = express();
 
 depot.couple(http);
 

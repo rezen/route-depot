@@ -9,6 +9,11 @@ depot.plugin('route', function(route) {
   return route;
 });
 
+depot.Route.addWrapper(function(conn, next, route, handle) {
+  // console.log('add', handle);
+  next();
+});
+
 // Handy plugin that allows us to add
 // controller before methods to middlewares
 depot.plugin('attach', function(route) {
@@ -34,7 +39,7 @@ const Ctrl = {
     next();
   },
   getB: function(req, res) {
-    console.log(this);
+
     res.json(this);
   },
   getAllCats : function(req, res) {
@@ -65,6 +70,7 @@ depot.get('/single', function(req, res, next) {
   }
   return res.send('I be first!');
 }, {priority: 1});
+
 
 const app = express();
 
