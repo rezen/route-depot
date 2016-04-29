@@ -3,8 +3,11 @@
 const _s = require('underscore.string');
 
 /**
- * Set up $routes maps for a controller without having
- * to explicity set endpoints
+ * Given route pieces generate route mapping key
+ *
+ * @param  {Array}  parts
+ * @param  {String} joiner
+ * @return {String}
  */
 function keyRoute(parts, joiner) {
   joiner = joiner || '-';
@@ -20,8 +23,17 @@ function keyRoute(parts, joiner) {
 
 module.exports.keyRoute = keyRoute;
 
-function resource(obj, resourceName) {
-  const name  = _s.decapitalize(resourceName || obj.name)
+
+/**
+ * For a given controller, generate route map for
+ * resource actions
+ *
+ * @param  {Class|Object} obj
+ * @param  {String}       resource
+ * @return {Object}
+ */
+function resource(obj, resource) {
+  const name  = _s.decapitalize(resource || obj.name)
                   .split('/')
                   .filter(p => p !== '')
                   .pop();
@@ -69,6 +81,13 @@ function resource(obj, resourceName) {
 
 module.exports.resource = resource;
 
+/**
+ * Provide a class or object that is intended to be a controller
+ * and generate a route map based on the names of the methods
+ *
+ * @param  {Class|Object} obj
+ * @return {Object}
+ */
 function implicit(obj) {
   var inspect = obj;
 

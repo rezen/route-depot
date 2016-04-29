@@ -45,6 +45,9 @@ module.exports = {
     // @todo for debug
     if (!router.$id) {router.$id =  Math.random();}
 
+    /**
+     * This.method should be get|post|del|head|put|all
+     */
     router[this.method].apply(router, args);
     return router;
   },

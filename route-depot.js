@@ -7,15 +7,17 @@ const RouteList  = require('./route-list');
 const Route      = require('./route');
 const RouteGroup = require('./route-group');
 
-// @todo event emitter
+/**
+ * A number of http routers adding routes immediately attach
+ * to the router which means you can't add routes out of order.
+ * The route depot allows you to specify the priortity, as well
+ * as have an info bank of all the routes that can be used
+ * by other services
+ * 
+ * @todo event emitter
+ */
 class RouteDepot {
   /**
-   * A number of http routers adding routes immediately attach
-   * to the router which means you can't add routes out of order.
-   * The route depot allows you to specify the priortity, as well
-   * as have an info bank of all the routes that can be used
-   * by other services
-   *
    * @param  {Object} coupler - coupler connects the defined routes to the http server
    * @param  {Object} mapper  - determines routes of an object
    * @param  {Object} logger
@@ -33,14 +35,17 @@ class RouteDepot {
     this.logger  = logger || console;
   }
 
+  /**
+   * Using the list integration attachs the functions below
+   * for the depot to use for adding routes.
+   *
+   * fn: addRoute(route)
+   * fn: route(endpoint, method, handler, config)
+   *
+   * @private
+   * @param  {Null|RouteList}
+   */
   setupRoutes(list) {
-    /**
-     * Using the list integration attachs the functions below
-     * for the depot to use for adding routes.
-     *
-     * .addRoute(route)
-     * .route(endpoint, method, handler, config)
-     */
     list = list || new this.RouteList();
     list.integrate(this);
     return list;
@@ -133,6 +138,11 @@ class RouteDepot {
     return this;
   }
 
+  any(endpoint, handler, config) {
+    this.route(endpoint, 'ALL', handler, null, config);
+    return this;
+  }
+
   /**
    * Maps HTTP methods to actions on controller
    * for index, create, store, show, edit
@@ -206,6 +216,11 @@ class RouteDepot {
     return this.addRoute(group);
   }
 
+  /**
+   * Get all the routes
+   *
+   * @return {Array}
+   */
   all() {
     return this.routes.all();
   }
@@ -251,6 +266,11 @@ class RouteDepot {
     return this;
   }
 
+  /**
+   * Event handler for route plugin
+   *
+   * @param  {Object} plugin
+   */
   onPluginRoute(plugin) {
     this.routes.addFilter(plugin);
   }
