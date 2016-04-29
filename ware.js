@@ -107,6 +107,20 @@ fnStack(Ware, 'builder');
  * to be assembled into array of handlers
  */
 Ware.addBuilder(function(handle, ware) {
+  if (handle.priority) {
+    ware.priority = handle.priority;
+    delete handle.priority;
+  }
+
+  if (Array.isArray(handle)) {
+    const handles = [];
+    for (const fn of handle) {
+      handles.push(ware.assemble(fn));
+      ware.nested.add(fn.name);
+    }
+    return handles;
+  }
+
   if (typeof handle === 'object') {
     const handles = [];
     for (const name in handle) {

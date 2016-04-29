@@ -20,7 +20,7 @@ test.$inject = ['cats'];
 
 function handler(conf) {
   console.log(conf)
-  return {
+  return [
     /**
      * Priority for middlware below
      * @type {Number}
@@ -29,19 +29,19 @@ function handler(conf) {
     /**
      * Add chrome logger for debugging
      */
-    chromeLogger: chromelogger.middleware,
+    chromelogger.middleware,
 
     /**
      * In dev mode we do not need to cache data
      */
-    noCache: function(req, res, next) {
+    function noCache(req, res, next) {
       console.log('no-cache!');
       res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
       res.setHeader('Pragma', 'no-cache'); // HTTP 1.0.
       res.setHeader('Expires', '0'); // Pro
       next();
     }
-  }
+  ]
 };
 
 handler.$inject = ['conf'];
