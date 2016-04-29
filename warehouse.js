@@ -5,9 +5,15 @@ const tools  = require('./tools')
 const Ware   = require('./ware');
 
 /**
+ * Keep all your middlewares safe in one place!
+ * 
  * @todo sort out path based middleware
  * @todo event emitter
  * @todo prefilter/postfilter?
+ *
+ * Currently groups are somewhat dumb and adding
+ * to existing groups is much too raw without 
+ * properly prioritizing etc.
  */
 class Warehouse {
 
@@ -103,8 +109,7 @@ class Warehouse {
     }
 
     if (!this.groups[group]) {
-      // @todo sort out groups ... because they can/should have
-      // prioritized items as well
+      // @todo needs improvement
       this.groups[group] = [];
     }
 
@@ -155,7 +160,10 @@ class Warehouse {
    * @return {Array}
    */
   assemble(wares) {
-    return tools.prioritized(wares);
+    // @todo flatten results?
+    return tools.prioritized(wares).map(w => {
+      return w.operators();
+    });
   }
 
   /**
@@ -172,7 +180,8 @@ class Warehouse {
    * @param  {Router} router
    */
   couple(wares, router) {
-    wares.map(w => {
+
+    this.assemble(wares).map(w => {
       w.map(m => {
         router.use(m)
       });
