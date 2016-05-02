@@ -41,4 +41,8 @@ function prioritized(list) {
   });
 }
 
-module.exports = {depotUrls, arrayFlatten, prioritized};
+function randomInt() {
+  return ('' + Math.random() * 10000000000).substr(0, 10);
+}
+
+module.exports = {depotUrls, arrayFlatten, prioritized, randomInt};
