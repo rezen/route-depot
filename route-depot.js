@@ -57,6 +57,10 @@ class RouteDepot {
    * @param  {Object} coupler
    */
   checkCoupling(coupler, isTest) {
+    if (!coupler) { 
+      throw new Error('A coupler is required');
+    }
+
     for (const method of ['route', 'depot', 'group']) {
       if (typeof coupler[method] !== 'function') {
         throw new Error('The coupler is missing @' + method)
