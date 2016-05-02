@@ -166,7 +166,74 @@ class Warehouse {
     }
 
     const idx  = this.nameIndex[name];
-    return this.wares[idx];
+    const ware = this.wares[idx];
+
+    if (!ware) {
+      return ware;
+    }
+
+    const cloned = this.cloneWare(ware);
+
+    cloned.args = cloned.args.concat(args);
+
+    return cloned;
+  }
+
+  find(name) {
+    const ware = this.get(name);
+
+    if (ware) {
+      return ware;
+    }
+
+    return this.group(name);
+  }
+
+  /**
+   * 
+   * @param  {String} name
+   * @param  {} middlewares
+   */
+  weld(name, wares) {
+    if (arguments.length > 2) {
+      wares = Array.prototype.slice.call(arguments, 1);
+    }
+
+    if (!Array.isArray(wares)) {
+      throw new Error('The {wares} argument is not a valid configuration');
+    }
+
+    if (!this.groups[name]) {
+      this.groups[name] = wares;
+    }
+    
+    this.welded[name] = wares;
+
+    return wares.map(id => this.find(id)).filter(w => w !== undefined && w.length !== 0);
+  }
+
+  cloneWare(ware) {
+    return new this.Ware(
+      ware.handlers || [],
+      null,
+      ware.config
+    );
+  }
+
+  parseNameWithArgs(name) {
+    const parts = name.split(':');
+
+    if (parts.length === 1) {
+      return [name, []];
+    }
+    name = parts.shift();
+
+    // @todo ?
+    // if (parts[0].charAt(0) === '{')
+
+    const args = parts[0].split(',');
+
+    return [name, args];
   }
 
   /**
