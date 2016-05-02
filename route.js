@@ -121,7 +121,10 @@ class Route {
       this.config.handle = handle;
     }
 
-    this.handlers.push(handle);
+    if (handle) {
+      this.handlers.push(handle);
+    }
+
     this.context = context;
     return this;
   }
@@ -207,7 +210,7 @@ class Route {
     var name = handle ? handle.name || '' : '';
 
     if (!name || name === '') {
-      name = ''.concat('h_', ('' + (Math.random() * 10000000000)).substr(0, 10));
+      name = ''.concat('h_', tools.randomInt());
     }
 
     if (!this.context) {
