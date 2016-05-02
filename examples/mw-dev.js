@@ -10,6 +10,7 @@ const config = {
 
 
 function test(a) {
+  console.log('INJECT');
   return function(req, res, next) {
     console.log('TEST-MW', a);
     next();
@@ -19,7 +20,7 @@ function test(a) {
 test.$inject = ['cats'];
 
 function handler(conf) {
-  console.log(conf)
+  console.log('ALL?', conf);
   return [
     /**
      * Priority for middlware below

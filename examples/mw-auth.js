@@ -5,23 +5,13 @@ const name = 'auth';
 const config = {name};
 
 function handler(auth) {
-
-    return function (req, res, next) {
-        if (!req.headers['x-otp']) {
-            return next();
-        }
-
-        auth.authenticate('pam', {session: false}, function(err, user) {
-            if (err) { return next(err); }
-
-            req.logIn(user, function(err_) {
-                req.user = new User(user);
-                next(err_);
-            });
-        })(req, res, next);
-    };
+  console.log('build-auth');
+  return function (req, res, next) {
+    console.log('authd', auth);
+    next();
+  };
 }
 
-handler.$inject = ['auth'];
+// handler.$inject = ['auth'];
 
 module.exports = {name, handler, config};

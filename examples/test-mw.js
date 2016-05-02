@@ -27,9 +27,12 @@ app.get('/', function(req, res) {
   res.send('yay');
 });
 
-warehouse.couple(warehouse.group('dev'), router)
+
+warehouse.couple(warehouse.get('auth'), router);
+warehouse.couple(warehouse.group('dev'), router);
 
 router.get('/lol', function(req, res) {
+  console.log('plz?')
   res.send('Birds home page');
 });
 
