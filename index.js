@@ -1,9 +1,10 @@
 'use strict';
 
 const RouteDepot = require('./route-depot');
+const Warehouse  = require('./warehouse');
 
 const setup = {
-  create: function(coupler, logger) {
+  create(coupler, logger) {
     if (typeof coupler === 'string') {
       coupler = require('./couple-' + coupler);
     }
@@ -12,12 +13,16 @@ const setup = {
     return depot;
   },
 
-  express: function(logger) {
+  express(logger) {
     return setup.create('express', logger);
   },
 
-  hapi: function(logger) {
+  hapi(logger) {
     return setup.create('hapi', logger);
+  },
+
+  warehouse() {
+    return new Warehouse();
   }
 };
 
