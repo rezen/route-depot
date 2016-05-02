@@ -1,6 +1,6 @@
 {
   "name": "route-depot",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Making it easy to register routes for your http server!",
   "author": "Andres Hermosilla <an2dres5m@gmail.com>",
   "dependencies": {
