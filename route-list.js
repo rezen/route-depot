@@ -34,6 +34,10 @@ class RouteList {
       method  = null;
     }
 
+    if (!endpoint) {
+      throw new Error('You need an {endpoint} to have a route');
+    }
+
     const route = new this.Route(endpoint, method, handler, context, config);
     this.addRoute(route);
     return this;
