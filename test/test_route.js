@@ -6,58 +6,58 @@ const Route      = require('../route');
 const Priorities = require('../priorities');
 
 
-describe('Route', function() {
+describe('Route', () => {
     var route;
     var configs = {
         a: {name: 'A'},
         b: {name: 'B', priority: 2},
     };
 
-    before(function() {
-        route = new Route('/disco', 'GET', function() {}, null, configs.a);
+    before(() => {
+        route = new Route('/disco', 'GET', () => {}, null, configs.a);
     });
 
-    describe('#constructor', function() {
-        it('Should parse the method', function() {
+    describe('#constructor', () => {
+        it('Should parse the method', () => {
             assert.equal(route.method, 'get');
         });
 
-        it('Should pick up the config', function() {
+        it('Should pick up the config', () => {
             assert.equal(route.config, configs.a);
         });
 
-        it('Should determine endpoint', function() {
+        it('Should determine endpoint', () => {
             assert.equal(route.endpoint, '/disco');
         });
 
-        it('Should name route', function() {
+        it('Should name route', () => {
             assert.equal(route.name, configs.a.name);
         });
 
-        it('Should have a priority', function() {
+        it('Should have a priority', () => {
             assert.equal(route.priority, Priorities.DEFAULT);
         });
 
-        it('Should have a root', function() {
+        it('Should have a root', () => {
             assert.equal(route.root, false);
         });
     });
 
-    describe('#url', function() {
-        it('Should return the full path of the url', function() {
+    describe('#url', () => {
+        it('Should return the full path of the url', () => {
             assert.equal(route.url(), '/disco');
         });
     });
 
-    describe('#intakeRequest', function() {
+    describe('#intakeRequest', () => {
         var data;
         var parser;
-        before(function() {
+        before(() => {
             data = {};
             parser = route.intakeRequest.bind(data);
         });
 
-        it('Parse a request', function() {
+        it('Parse a request', () => {
             const req = 'GET /dance';
             parser(req);
             assert.equal(data._request, req);
@@ -65,28 +65,28 @@ describe('Route', function() {
             assert.equal(data.path, '/dance');
         });
 
-        it('Cannot parse invalid http methods', function() {
+        it('Cannot parse invalid http methods', () => {
             const route_ = new Route('/disco')
             route_.intakeRequest('Z /lo');
             assert.equal(route_.method, null);
         });
 
-        it('Explicit http methods over-ride parsed ones', function() {
+        it('Explicit http methods over-ride parsed ones', () => {
             const route_ = new Route('POST /disco', 'GET')
             assert.equal(route_.method, 'get');
         });
     });
 
-    describe('#assemble', function() {
+    describe('#assemble', () => {
 
-       it('Build the route handle', function() {
+       it('Build the route handle', () => {
             function xhandle(req, res, next) {}
             const h = route.assemble(xhandle);
             assert.equal(h.$bound, false);
             assert.equal(h.$handle, 'xhandle');
        });
 
-       it('Build the handle with bindings', function() {
+       it('Build the handle with bindings', () => {
             function yhandle(req, res, next) {
                 return this.im;
             }

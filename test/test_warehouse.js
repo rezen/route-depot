@@ -35,7 +35,10 @@ describe('Warehouse', () => {
     const ware = {
       name    : 'bob', 
       handler : function bob2() {}, 
-      config  : {}
+      config  : {},
+      clone: function() {
+        return ware;
+      }
     };
 
     it('Add to the wares attribute and add index', () => {
@@ -140,12 +143,67 @@ describe('Warehouse', () => {
 
     it('Will get the ware of the name', () => {
       const stub = sinon.stub();
-      const dogs = {name: 'dogs', operators: stub};
-      house.wares.push(dogs);
-      house.nameIndex['dogs'] = 0;
+
+      const dog = {name: 'dogs', handler:stub, config: {}};
+      house.add(dog);
 
       const ware = house.get('dogs');
-      assert.equal(ware, dogs);
+      assert.equal(ware.label, dog.name);
+    });
+  });
+
+  describe('#weld', () => {
+    const nores = function nores(req, res, next) {};
+    const group = ['can:meow', 'cat'];
+
+    beforeEach(() => {
+      house.add('can', function(group) {
+        assert.equal(group, 'meow');
+        return nores;
+      }, {});
+
+      house.add('cat', nores, {});
+      house.add('inParty', function inParty() {}, {group: 'union'});
+    });
+
+    it('Will combine existing middlewares and return the same number', () => {
+      const cats   = house.weld('cats', group);
+      const dog    = house.weld('doggy', ['can:dog']);
+      assert.equal(cats.length, 2);
+      assert.equal(dog.length, 1);
+    });
+
+    it('Will return no middlewares if they do not exist', () => {
+      const dragon = house.weld('drag', 'dragons', 'unicorns');
+      assert.equal(dragon.length, 0);
+    });
+
+    it('Will only return existing middleware', () => {
+      const catgon = house.weld('catgon', 'cat', 'unicorns');
+      assert.equal(catgon.length, 1);
+    });
+
+    it('Will include groups', () => {
+      const weld = ['union'].concat(group);
+      const cats = house.weld('union-cats', weld);
+      assert.equal(cats.length, weld.length);
+    });
+
+    it('Will setup the expected handlers', () => {
+      const group = ['can:meow', 'cat'];
+      const cats = house.weld('cats', group);
+
+      house.couple(cats, {use(fn) {
+        assert.equal(fn, nores);
+      }});
+    });
+
+    it('Will include groups handlers', () => {
+      const weld = ['union'].concat(group);
+      const cats = house.weld('union-cats', weld);
+
+      const union = house.assemble(cats[0]);
+      assert.equal('inParty', union[0].name);
     });
   });
 

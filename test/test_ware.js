@@ -6,7 +6,7 @@ const Ware       = require('../ware');
 const Priorities = require('../priorities');
 
 
-describe('Ware', function() {
+describe('Ware', () => {
   var ware1;
   var spy1;
   var configs = {
@@ -14,21 +14,21 @@ describe('Ware', function() {
     b: {name: 'B', priority: 2},
   };
 
-  before(function() {
+  before(() => {
     spy1 = sinon.spy();
-    ware1 = new Ware(spy1, configs.b);
+    ware1 = new Ware(spy1, null, configs.b);
   });
 
-  describe('#Ware', function() {
-    it('Should have specific class properties', function() {
+  describe('#Ware', () => {
+    it('Should have specific class properties', () => {
       assert(Array.isArray(Ware.builders));
       assert.equal(typeof Ware.addBuilder, 'function');
       assert.equal(Ware.builders.length, 1);
     });
   });
 
-  describe('#constructor', function() {
-    it('Should have specific instance properties set', function() {
+  describe('#constructor', () => {
+    it('Should have specific instance properties set', () => {
       assert(Array.isArray(ware1.builders));
       assert(Array.isArray(ware1.handlers));
       assert.equal(ware1.handlers.length, 1);
@@ -40,28 +40,36 @@ describe('Ware', function() {
     });
   });
 
-  describe('#toConfig', function() {
+  describe('#toConfig', () => {
 
-    it('Accept an undefined config and provide a default', function() {
+    it('Accept an undefined config and provide a default', () => {
       const conf = ware1.toConfig();
       assert.deepEqual(conf, {group: false, priority: 999, builders: []});
     });
 
-    it('Accept an integer and convert to priority', function() {
+    it('Accept an integer and convert to priority', () => {
       const conf = ware1.toConfig(12);
       assert.deepEqual(conf, {priority: 12,  builders: []});
     });
 
-    it('Will accept priority config as a string and fetch off Priorities object', function() {
+    it('Will accept priority config as a string and fetch off Priorities object', () => {
       const conf = ware1.toConfig({priority: 'HIGH'});
       assert.deepEqual(conf, {priority: 100,  builders: []});
     });
   });
 
-  describe('#operators', function() {
+  describe('#clone', () => {
+    it('Create a copy of itself', () => {
+      const clone = ware1.clone();
+      assert.deepEqual(clone, ware1);
+      assert(clone !== ware1);
+    });
+  });
+
+  describe('#operators', () => {
     var ware2;
     var spies;
-    before(function() {
+    before(() => {
       spies = {
         a: sinon.spy(),
         b: sinon.spy()
@@ -71,48 +79,48 @@ describe('Ware', function() {
       sinon.spy(ware2, 'collectBuilders');
     });
 
-    it('Should return an array', function() {
+    it('Should return an array', () => {
       const operators = ware1.operators();
       assert(Array.isArray(operators));
       assert.equal(operators[0], spy1);
    });
 
-    it('Should call @collectBuilders', function() {
+    it('Should call @collectBuilders', () => {
       const operators = ware2.operators();
       
       // Calls once for the parent and once for each child
       assert.equal(ware2.collectBuilders.callCount, 3);
     });
 
-    it('Should return the correct number of operators', function() {
+    it('Should return the correct number of operators', () => {
       const operators = ware2.operators();
       assert.equal(operators.length, 2);
       assert.deepEqual(Array.from(ware2.nested), ['proxy', 'a', 'b']);
     });
 
-    it('Should throw an error with a bad builder', function() {
-      ware2.addBuilder(function() {return false;});
+    it('Should throw an error with a bad builder', () => {
+      ware2.addBuilder(() => {return false;});
       assert.throws(() => {
         ware3.operators()
       });
     });
   });
 
-  describe('#addBuilder', function() {
+  describe('#addBuilder', () => {
     var ware3;
     var builder;
-    before(function() {
+    before(() => {
       builder = sinon.stub();
       ware3 = new Ware(function dance(){});
       ware3.addBuilder(builder);
     });
 
-    it('Should add to list called from @collectBuilders', function() {
+    it('Should add to list called from @collectBuilders', () => {
       const builders = ware3.collectBuilders();
       assert.equal(builders[1], builder);
     });
 
-    it('Should be called when running @operators', function() {
+    it('Should be called when running @operators', () => {
       assert.throws(() => {
         ware3.operators()
       });
