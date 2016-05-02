@@ -21,6 +21,7 @@ class Warehouse {
     this.wares     = [];
     this.nameIndex = {};
     this.groups    = {};
+    this.welded    = {};
     this.Ware      = Ware;
   }
 
@@ -35,6 +36,7 @@ class Warehouse {
       name    = tmp.name;
       handler = tmp.handler;
       config  = tmp.config;
+
     }
 
     config = config || {};
@@ -58,8 +60,7 @@ class Warehouse {
     }
 
     config.name = name;
-
-    const ware = new this.Ware(handler, config);
+    const ware = new this.Ware(handler, null, config);
 
     if (this.exists(ware)) {
       return this;
@@ -129,6 +130,12 @@ class Warehouse {
    * @param  {String} name
    */
   group(name) {
+    var args = Array.prototype.slice.call(arguments, 1);
+
+    if (args.length === 1) {
+      [name, args] = this.parseNameWithArgs(name);
+    }
+
     if (!this.groups[name]) {
       return [];
     }
@@ -144,14 +151,22 @@ class Warehouse {
   }
 
   /**
+   * We return a copy of the ware because we do not 
+   * want the properties of the original to be 
+   * manipulated
+   *
    * @param  {String} name
    * @return {Ware}
    */
   get(name) {
-    const idx = this.nameIndex[name];
-    const ware = this.wares[idx];
+    var args = Array.prototype.slice.call(arguments, 1);
 
-    return ware; // @todo should we return operators?
+    if (args.length === 0) {
+      [name, args] = this.parseNameWithArgs(name);
+    }
+
+    const idx  = this.nameIndex[name];
+    return this.wares[idx];
   }
 
   /**
@@ -160,10 +175,22 @@ class Warehouse {
    * @return {Array}
    */
   assemble(wares) {
+    if (!wares) {
+      throw new Error('You cannot assemble without {wares}');
+    }
+
+    if (!Array.isArray(wares)) {
+      wares = [wares.operators()];
+    }
+
     // @todo flatten results?
-    return tools.prioritized(wares).map(w => {
+    const assembled = tools.prioritized(wares).map(w => {
+      if (Array.isArray(w)) { return this.assemble(w); }
+
       return w.operators();
     });
+
+    return tools.arrayFlatten(assembled);
   }
 
   /**
@@ -180,11 +207,12 @@ class Warehouse {
    * @param  {Router} router
    */
   couple(wares, router) {
+    if (!wares) {
+      throw new Error('There are no {wares} to couple to the {router}');
+    }
 
     this.assemble(wares).map(w => {
-      w.map(m => {
-        router.use(m)
-      });
+      router.use(w);
     });
   }
 }

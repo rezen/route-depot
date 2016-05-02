@@ -1,5 +1,6 @@
 'use strict';
 
+const tools      = require('./tools');
 const Priorities = require('./priorities');
 const fnStack    = require('./mixins/fn-stack');
 
@@ -9,7 +10,7 @@ class Ware {
    * @param  {Array|Function|Object} handlers
    * @param  {Object} config
    */
-  constructor(handlers, config) {
+  constructor(handlers, context, config) {
     config = this.toConfig(config);
 
     if (!Array.isArray(handlers)) {
@@ -21,6 +22,8 @@ class Ware {
     this.priority = config.priority
     this.config   = config;
     this.builders = config.builders || [];
+    this.args     = config.args || [];
+    this.context  = context || (config.context || null);
     this.nested   = new Set();
   }
 
@@ -73,7 +76,6 @@ class Ware {
   assemble(handle, builders) {
     builders = builders || this.builders;
     const makers = this.collectBuilders(builders);
-
     return makers.reduce((handle_, make) => {
       return make(handle_, this);
     }, handle);
@@ -93,6 +95,14 @@ class Ware {
     // @todo camelize
     return this.config.name  || this.handler.name;
   }
+
+  clone() {
+    return new this.constructor(
+      this.handlers,
+      this.context,
+      this.config
+    );
+  }
 }
 
 /**
@@ -106,7 +116,7 @@ fnStack(Ware, 'builder');
  * Default builder that allows dictionaries of objects
  * to be assembled into array of handlers
  */
-Ware.addBuilder(function(handle, ware) {
+Ware.addBuilder(function buildWare(handle, ware) {
   if (handle.priority) {
     ware.priority = handle.priority;
     delete handle.priority;
@@ -130,12 +140,17 @@ Ware.addBuilder(function(handle, ware) {
     return handles;
   }
 
+  // If args are passed to the middleware
+  if (ware.args.length > 0) {
+    return handle.apply(null, ware.args);
+  }
+
   // Associate handler name with ware
   if (handle.name && handle.name !== 'handler') {
     ware.nested.add(handle.name);
   }
 
   return handle;
-}, Priorities.HIGH);
+});
 
 module.exports = Ware;
