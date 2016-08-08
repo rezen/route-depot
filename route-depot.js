@@ -22,7 +22,7 @@ class RouteDepot {
    * @param  {Object} mapper  - determines routes of an object
    * @param  {Object} logger
    */
-  constructor(coupler, mapper, logger) {
+  constructor(coupler, warehouse, mapper, logger) {
     this.plugins    = {};
     this.Priority   = Priorities;
     this.Route      = Route;
@@ -31,8 +31,9 @@ class RouteDepot {
     this.routes     = this.setupRoutes();
 
     this.checkCoupling(coupler);
-    this.mapper  = mapper;
-    this.logger  = logger || console;
+    this.warehouse = warehouse;
+    this.mapper    = mapper;
+    this.logger    = logger || console;
   }
 
   /**
@@ -283,8 +284,8 @@ class RouteDepot {
     throw new Error('RouteDepot@couple missing definition');
   }
 
-  static create(coupler, logger) {
-    return new RouteDepot(coupler, mapper, logger || console);
+  static create(coupler, warehouse, logger) {
+    return new RouteDepot(coupler, warehouse, mapper, logger || console);
   }
 }
 

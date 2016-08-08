@@ -3,13 +3,15 @@
 const RouteDepot = require('./route-depot');
 const Warehouse  = require('./warehouse');
 
+const warehouse = new Warehouse();
+
 const setup = {
   create(coupler, logger) {
     if (typeof coupler === 'string') {
       coupler = require('./couple-' + coupler);
     }
 
-    const depot = RouteDepot.create(coupler, logger);
+    const depot = RouteDepot.create(coupler, warehouse, logger);
     return depot;
   },
 
@@ -22,7 +24,7 @@ const setup = {
   },
 
   warehouse() {
-    return new Warehouse();
+    return warehouse;
   }
 };
 
