@@ -179,6 +179,11 @@ class Warehouse {
     return cloned;
   }
 
+  assembled(name) {
+    const ware = this.get(name);
+    return this.assemble(ware);
+  }
+
   find(name) {
     const ware = this.get(name);
 
@@ -253,7 +258,7 @@ class Warehouse {
     // @todo flatten results?
     const assembled = tools.prioritized(wares).map(w => {
       if (Array.isArray(w)) { return this.assemble(w); }
-
+      if (typeof w === 'function') { return w; }
       return w.operators();
     });
 
