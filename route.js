@@ -219,12 +219,20 @@ class Route {
       return fn;
     }
 
+    let ctx = this.context;
+
     if (typeof handle === 'string') {
       name = handle;
-      handle = this.context[handle];
+
+      if (!ctx[handle]) {
+        let name = ctx.name || ctx.constructor.name;
+        throw new Error('Route context is missing configured action - ' + name + '.' + handle);
+      }
+
+      handle = ctx[handle];
     }
 
-    fn = handle.bind(this.context);
+    fn = handle.bind(ctx);
     fn.$bound = true;
     fn.$handle = name;
     return fn;
