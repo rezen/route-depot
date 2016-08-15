@@ -36,7 +36,6 @@ class Warehouse {
       name    = tmp.name;
       handler = tmp.handler;
       config  = tmp.config;
-
     }
 
     config = config || {};
@@ -81,6 +80,8 @@ class Warehouse {
   }
 
   /**
+   * @todo  override option
+   * 
    * @param {Ware} ware
    */
   addWare(ware) {
@@ -100,7 +101,8 @@ class Warehouse {
   }
 
   /**
-   *
+   * @todo prioritization within groups
+   * 
    * @param  {String}      group
    * @param  {String|Ware} ware
    */
@@ -110,7 +112,6 @@ class Warehouse {
     }
 
     if (!this.groups[group]) {
-      // @todo needs improvement
       this.groups[group] = [];
     }
 
@@ -146,7 +147,7 @@ class Warehouse {
   }
 
   built(name) {
-    const ware = (typeof name === 'string') ? this.get(name) : name;
+    const ware = (typeof name === 'string') ? this.find(name) : name;
     return ware.operators();
   }
 
@@ -185,13 +186,13 @@ class Warehouse {
   }
 
   find(name) {
-    const ware = this.get(name);
+    const ware = this.group(name);
 
     if (ware) {
       return ware;
     }
 
-    return this.group(name);
+    return this.get(name);
   }
 
   /**
