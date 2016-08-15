@@ -88,7 +88,13 @@ class Route {
     this._request = request;
     const parts = request.split(' ');
 
+    if (parts.length === 0) {
+      return;
+    }
+  
     if (parts.length > 1) {
+      this.method = parts.shift();
+    } else if (this.isValidMethod(parts[0])) {
       this.method = parts.shift();
     }
 
@@ -229,10 +235,10 @@ class Route {
         throw new Error('Route context is missing configured action - ' + name + '.' + handle);
       }
 
-      handle = ctx[handle];
+      handle = this.context[handle];
     }
 
-    fn = handle.bind(ctx);
+    fn = handle.bind(this.context);
     fn.$bound = true;
     fn.$handle = name;
     return fn;
@@ -283,18 +289,16 @@ class Route {
     return !this.root ? '' : this._path;
   }
 
+  isValidMethod(method) {
+    const methods = ['post', 'get', 'put', 'delete', 'patch', 'head'];
+    method = method.toLowerCase();
+    return (methods.indexOf(method) !== -1);
+  }
+
   set method(val) {
     if (!val) {return;}
-
-    val = val.toLowerCase();
-
-    const methods = ['post', 'get', 'put', 'delete', 'patch', 'head'];
-
-    if (methods.indexOf(val) === -1) {
-      return;
-    }
-
-    this._method = val;
+    if (!this.isValidMethod(val)) {return;}
+    this._method = val.toLowerCase();
   }
 
   get method() {
