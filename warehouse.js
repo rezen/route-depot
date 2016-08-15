@@ -148,7 +148,7 @@ class Warehouse {
 
   built(name) {
     const ware = (typeof name === 'string') ? this.find(name) : name;
-    return ware.operators();
+    return this.assemble(ware);
   }
 
   /**
@@ -178,11 +178,6 @@ class Warehouse {
     cloned.args = cloned.args.concat(args);
 
     return cloned;
-  }
-
-  assembled(name) {
-    const ware = this.get(name);
-    return this.assemble(ware);
   }
 
   find(name) {
