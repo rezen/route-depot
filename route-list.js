@@ -1,5 +1,6 @@
 'use strict';
 
+const _          = require('lodash');
 const tools      = require('./tools');
 const Priorities = require('./priorities');
 const Route      = require('./route');
@@ -107,7 +108,7 @@ class RouteList {
    * @return {Array}
    */
   all() {
-    return tools.prioritized(this.entries);
+    return _.orderBy(this.entries, ['priority', 'endpoint.length'], ['asc', 'desc']);
   }
 }
 

@@ -183,7 +183,7 @@ class Warehouse {
   find(name) {
     const ware = this.group(name);
 
-    if (ware) {
+    if (ware.length > 0) {
       return ware;
     }
 
