@@ -6,7 +6,7 @@
   "dependencies": {
     "async": "~1.5.2",
     "lodash": "^4.15.0",
-    "underscore.string": "3.3.4"
+    "underscore.string": "3.3.5"
   },
   "repository": {
     "type": "git",
